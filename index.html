@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ClickRobot Chaiyaphum ระบบเช็คชื่อ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hd">
+    <div class="logo">
+      <img src="logo.jpg" alt="Click Robot Logo">
+    </div>
+    <div>
+      <h1>ClickRobot Chaiyaphum</h1>
+      <div class="sub" id="sub">ระบบเช็คชื่อนักเรียน</div>
+    </div>
+    <button class="tg" id="tg" aria-label="เปลี่ยนธีม">🌙</button>
+  </header>
+
+  <div id="banner"></div>
+  <div id="panel"></div>
+
+  <div class="row">
+    <select id="cls" aria-label="เลือกคลาส"></select>
+    <button class="ghost" id="addCls" style="flex:0 0 auto">+ คลาส</button>
+    <button class="ghost" id="edCls" style="flex:0 0 auto" aria-label="แก้ไขคลาส">✎</button>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button data-t="dash">แดชบอร์ด</button>
+    <button data-t="check" class="on">เช็คชื่อ</button>
+    <button data-t="hist">ประวัติ</button>
+    <button data-t="rep">รายงาน</button>
+  </div>
+
+  <div id="v"></div>
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
