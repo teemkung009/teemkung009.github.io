@@ -16,6 +16,18 @@
       transform: translateY(-3px) !important;
       box-shadow: 0 6px 16px rgba(0,0,0,0.12) !important;
     }
+    .av {
+      overflow: hidden !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    .av img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
     button {
       position: relative;
       overflow: hidden;
@@ -49,6 +61,7 @@ let date = today();
 let month = today().slice(0, 7);
 let q = '';
 let edSt = null;
+let tempImg = null;
 
 const $ = id => document.getElementById(id);
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -98,6 +111,33 @@ const sessions = c => Object.values(A)
 let lastPop = null;
 let animKey = '';
 let wasAll = false;
+
+// 🖼️ Helper: Compress image to Base64
+function compressImg(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const max = 180;
+        let w = img.width, h = img.height;
+        if (w > h) {
+          if (w > max) { h = Math.round(h * max / w); w = max; }
+        } else {
+          if (h > max) { w = Math.round(w * max / h); h = max; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 // ==========================================
 // 🎆 FX 1: Advanced Confetti System
@@ -361,9 +401,21 @@ function edForm(c) {
     edSt = null;
     return '';
   }
+  const imgSrc = tempImg !== null ? tempImg : s.img;
+
   return `<div class="edit">
     <div class="sub" style="margin:0">แก้ไขข้อมูลนักเรียน</div>
-    <input id="en" value="${esc(s.name)}" placeholder="ชื่อ">
+    <div style="display:flex;align-items:center;gap:12px;margin:8px 0;">
+      <div class="av" id="imgPrev" style="width:52px;height:52px;font-size:22px;flex-shrink:0;cursor:pointer;background:var(--brand);color:var(--onbrand);" onclick="document.getElementById('eimg').click()">
+        ${imgSrc ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;">` : esc([...s.name][0])}
+      </div>
+      <div>
+        <button type="button" class="ghost" style="padding:6px 10px;font-size:12px;" onclick="document.getElementById('eimg').click()">📷 เปลี่ยนรูปถ่าย</button>
+        <input type="file" id="eimg" accept="image/*" hidden>
+      </div>
+    </div>
+    <input id="en" value="${esc(s.name)}" placeholder="ชื่อนักเรียน">
+    <input id="ea" type="number" value="${esc(s.age || '')}" placeholder="อายุ (ขวบ)" inputmode="numeric">
     <input id="ep" value="${esc(s.phone || '')}" placeholder="เบอร์ผู้ปกครอง" inputmode="tel">
     <input id="eo" value="${esc(s.note || '')}" placeholder="หมายเหตุ เช่น แพ้อาหาร">
     <div class="row" style="margin:0">
@@ -410,18 +462,6 @@ function vDash(c) {
   <div class="card">
     <h3>⚠️ ควรติดตาม (ต่ำกว่า 70%)</h3>
     ${risk.length ? risk.map(r => `<div class="li"><span>${esc(r.name)}</span><b class="low">${r.pct}%</b></div>`).join('') : '<div class="sub">ไม่มีใครเลย เยี่ยมมาก 🎉</div>'}
-  </div>
-  <div class="card">
-    <h3>⚙️ ตั้งค่า</h3>
-    <button class="ghost" id="snd" style="width:100%">${sound ? '🔊 เสียงตอนกด: เปิด' : '🔇 เสียงตอนกด: ปิด'}</button>
-    <div class="sw">
-      ${['#FFC400', '#7C5CFF', '#2E90FA', '#12B76A', '#F04438'].map(a => `<button class="dot" data-ac="${a}" style="background:${a}" aria-label="สี ${a}"></button>`).join('')}
-    </div>
-    <div class="row" style="margin:10px 0 0">
-      <button class="ghost" id="bk" style="flex:1">💾 สำรองข้อมูล</button>
-      <button class="ghost" id="rs" style="flex:1">📥 นำเข้า</button>
-    </div>
-    <input type="file" id="fi" accept=".json,application/json" hidden>
   </div>`;
 }
 
@@ -503,11 +543,12 @@ function vCheck(c) {
   ${st.length > 4 ? `<div class="row"><input id="q" value="${esc(q)}" placeholder="🔍 ค้นหาชื่อ" aria-label="ค้นหา"></div>` : ''}
   ${st.length ? st.filter(s => !q || s.name.toLowerCase().includes(q.toLowerCase())).map(s => `
     <div class="st ${m[s.id] ? 'm-' + m[s.id] : ''}">
-      <div class="av" data-ed="${s.id}" title="แก้ไขข้อมูล" style="background:hsl(${[...s.name].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 360, 7)} 70% 55% / .22)">
-        ${esc([...s.name][0])}
+      <div class="av" data-ed="${s.id}" title="แก้ไขข้อมูล" style="${s.img ? '' : `background:hsl(${[...s.name].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 360, 7)} 70% 55% / .22)`}">
+        ${s.img ? `<img src="${s.img}">` : esc([...s.name][0])}
       </div>
       <div class="n">
-        ${esc(s.name)}${streak(c.id, s.id) >= 3 ? `<span class="fire">🔥${streak(c.id, s.id)}</span>` : ''}
+        ${esc(s.name)}${s.age ? `<span style="opacity:0.75;font-size:0.85em;font-weight:normal;">(${esc(s.age)} ขวบ)</span>` : ''}
+        ${streak(c.id, s.id) >= 3 ? `<span class="fire">🔥${streak(c.id, s.id)}</span>` : ''}
         ${s.phone || s.note ? `<div class="meta">${s.phone ? '📞 ' + esc(s.phone) : ''} ${s.note ? '📝 ' + esc(s.note) : ''}</div>` : ''}
       </div>
       <div class="seg" data-id="${s.id}">
@@ -549,7 +590,7 @@ function repData(c) {
       else if (k === 'a') a++;
     });
     return {
-      name: s.name,
+      name: s.name + (s.age ? ` (${s.age} ขวบ)` : ''),
       p,
       l,
       a,
@@ -701,7 +742,13 @@ v.oninput = e => {
   }
 };
 
-v.onchange = e => {
+v.onchange = async e => {
+  if (e.target.id === 'eimg' && e.target.files[0]) {
+    tempImg = await compressImg(e.target.files[0]);
+    const prev = $('imgPrev');
+    if (prev) prev.innerHTML = `<img src="${tempImg}" style="width:100%;height:100%;object-fit:cover;">`;
+    return;
+  }
   if (e.target.id === 'fi') {
     restore(e.target.files[0]);
     return;
@@ -724,6 +771,9 @@ v.onclick = async e => {
   const av = e.target.closest('.av');
   if (av && av.dataset.ed) {
     edSt = av.dataset.ed;
+    const c = cls();
+    const s = (c?.students || []).find(x => x.id === edSt);
+    tempImg = s ? (s.img || null) : null;
     beep('click');
     render();
     return;
@@ -757,6 +807,7 @@ v.onclick = async e => {
   }
   if (b.id === 'ecx') {
     edSt = null;
+    tempImg = null;
     render();
     return;
   }
@@ -764,10 +815,13 @@ v.onclick = async e => {
     const st = (c.students || []).map(x => x.id === edSt ? {
       ...x,
       name: $('en').value.trim() || x.name,
+      age: $('ea').value.trim(),
       phone: $('ep').value.trim(),
-      note: $('eo').value.trim()
+      note: $('eo').value.trim(),
+      img: tempImg !== null ? tempImg : x.img
     } : x);
     edSt = null;
+    tempImg = null;
     C[c.id] = { name: c.name, students: st };
     render();
     await put('classes', c.id, { name: c.name, students: st });
@@ -848,7 +902,7 @@ async function copyText(t) {
 function sumText(c) {
   const m = marks();
   const st = c.students || [];
-  const g = k => st.filter(s => m[s.id] === k).map(s => s.name);
+  const g = k => st.filter(s => m[s.id] === k).map(s => s.name + (s.age ? ` (${s.age}ขวบ)` : ''));
   const un = st.filter(s => !m[s.id]).length;
   return `เช็คชื่อ ${c.name}\nวันที่ ${date}\nมา ${g('p').length}: ${g('p').join(', ') || '-'}\nสาย ${g('l').length}: ${g('l').join(', ') || '-'}\nขาด ${g('a').length}: ${g('a').join(', ') || '-'}\nยังไม่เช็ค ${un}`;
 }
