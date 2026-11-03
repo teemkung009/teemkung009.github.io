@@ -1,0 +1,8 @@
+<!doctype html><html><head><link rel=stylesheet href="../fonts/fonts.css"></head><body style="margin:0;background:#333"><canvas id=c width=2160 height=3840 style="width:1080px"></canvas>
+<script src="../js/core.js"></script><script src="../js/sets.js"></script><script>
+(async()=>{for(const f of ['600 20px Mitr','500 20px Mitr','600 20px Kanit','500 20px Sarabun','700 20px Sarabun']) await document.fonts.load(f,'กขค abc');
+const ctx=document.getElementById('c').getContext('2d');
+const fns=[[paintStorefront,1900],[paintSignWall,1080],[s=>{paintClassroom(s);classTablesBack(s);classMat(s)},1700],[s=>{paintOffice(s);officeDesk(s)},1300],[paintDuploRoom,1300],[s=>{paintRoom(s);roomDesk(s,380,1180);deskLamp(s,880,1160);lampGlow(s,950,950,1);backpackProp(s,300,1480,1.2)},1300]];
+fns.forEach(([f,w],i)=>{ctx.save();ctx.translate((i%3)*720,Math.floor(i/3)*1920);const sc=Math.min(720/w,1);ctx.scale(sc,sc*1);ctx.beginPath();ctx.rect(0,0,w,1920);ctx.clip();f(ctx);ctx.restore();});
+document.title='ok'})();
+</script></body></html>

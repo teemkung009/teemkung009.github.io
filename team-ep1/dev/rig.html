@@ -1,0 +1,13 @@
+<!doctype html><html><body style="margin:0;background:#ddd"><canvas id=c width=1080 height=1920></canvas>
+<script src="../js/core.js"></script><script>
+const ctx=document.getElementById('c').getContext('2d');
+ctx.fillStyle='#f6efe3';ctx.fillRect(0,0,W,H);
+const cs=[CAST.team,CAST.pimai,CAST.pam,CAST.korn];
+cs.forEach((c,i)=>drawPerson(ctx,c,P({x:140+i*260,y:600,s:5,face:i%2?-1:1,mouth:'smile',bag:c===CAST.team})));
+KIDS.forEach((c,i)=>drawPerson(ctx,c,P({x:110+i*170,y:1000,s:5,face:1,mouth:'bigsmile'})));
+// team expressions close up
+const ex=[{brow:'worry',mouth:'worry',lookX:-0.6,sweat:.8},{brow:'neutral',mouth:'soft',blink:1},{brow:'focus',mouth:'press',turn:0},{brow:'soft',mouth:'smile',turn:-0.3}];
+ex.forEach((e,i)=>{ctx.save();ctx.beginPath();ctx.rect(i*270,1100,270,500);ctx.clip();drawPerson(ctx,CAST.team,P(Object.assign({x:135+i*270,y:2400,s:14},e)));ctx.restore();});
+// walk test
+for(let i=0;i<4;i++) drawPerson(ctx,CAST.team,P(Object.assign({x:150+i*260,y:1880,s:2.6,face:1,bag:true},walkPose(i/4))));
+</script></body></html>
